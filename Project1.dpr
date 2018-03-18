@@ -2,7 +2,10 @@ program Project1;
 
 uses
   Vcl.Forms,
-  Unit1 in 'Unit1.pas' {Form1};
+  Unit1 in 'Unit1.pas' {Form1},
+  SyntacticalAnalyzer in 'SyntacticalAnalyzer.pas',
+  LexicalAnalyzer in 'LexicalAnalyzer.pas',
+  Logger in 'Logger.pas';
 
 {$R *.res}
 

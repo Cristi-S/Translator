@@ -1,27 +1,27 @@
 unit Unit1;
 
-{$optimization off}
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, System.Generics.Collections,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  SyntacticalAnalyzer, Logger, LexicalAnalyzer;
 
 type
   TForm1 = class(TForm)
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
-    ButtonCompile: TButton;
     Memo1: TMemo;
     Memo2: TMemo;
     Button2: TButton;
+    ButtonCompile: TButton;
     procedure ButtonCompileClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     function Zagolovok(): boolean;
-    function SpisokObiavlenii():boolean;
-    procedure Obiavlenie(var index: integer);
+    function SpisokObiavlenii(): boolean;
+    function Obiavlenie(var index: integer): boolean;
     procedure SyntaxAnalyzer();
     procedure FormCreate(Sender: TObject);
   private
@@ -46,6 +46,11 @@ const
 
 var
   Form1: TForm1;
+  // массив скомпилированных кодов программы
+  //IdArray: array [1 .. 200] of TLexScaner;
+  IdArray: TList<TLexScaner>;
+  // список идентификаторов
+  Identifier: TList<String>;
   SysAlfa: array [1 .. SysAlfaCount] of string = (
     'program',
     'var',
@@ -83,93 +88,20 @@ var
     '9',
     '0'
   );
-  Identifier: TList<String>;
-  IdArray: array [1 .. 200] of TLexScaner;
-  // массив скомпилированных идентефикаторов
+
+  implementation
 
 
-  // Alfa: array[1..AlfaCount] of string = ('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
-
-implementation
 
 {$R *.dfm}
-
-// проверяет вхождение символа в набор допустимых символов
-function IsSymbolInAlha(Str: string): boolean;
-var
-  i: integer;
-begin
-  result := true;
-  for i := 1 to Str.Length do
-    if not(Str[i] in ['a' .. 'z', '0' .. '9', ';', ':', ',', '=', '.', '+', '-',
-      '*', '(', ')', ' ']) then
-      result := false;
-end;
-
-// проверяет является ли слово числом
-function IsNumber(Str: string): boolean;
-var
-  i: integer;
-begin
-  result := true;
-
-  for i := 1 to Str.Length do
-    if not(Str[i] in ['0' .. '9']) then
-      result := false;
-end;
-
-// разбивает строку на слова
-function Parser(Str: string): TStringList;
-var
-  s1: TStringList;
-begin
-  s1 := TStringList.Create;
-  ExtractStrings([' '], [' '], PChar(Str), s1);
-
-  result := s1;
-end;
-
-// поиск имени в таблице служебных слов
-// name - название идентефикатора
-function SearchKeyWord(Str: string): integer;
-var
-  i: integer;
-begin
-  for i := 1 to SysAlfaCount do
-    if Str = SysAlfa[i] then
-    begin
-      result := i;
-      exit
-    end
-    else
-    begin
-      // проверяем число ли это
-      if Str[1] in ['0' .. '9'] then
-      begin
-        if IsNumber(Str) then
-        begin
-          result := 13;
-          exit;
-        end
-        // если это не число и первый символ цифра - ошибка
-        else
-        begin
-          result := 90;
-        end;
-      end
-      else
-      // если это иденетефикатор, а не число
-      begin
-        result := 12;
-      end;
-    end;
-end;
 
 function SearchLexInIdArray(aLex: string): integer;
 var
   i: integer;
 begin
-  for i := 0 to Length(IdArray) do
+  result := -1;
+  for i := 0 to IdArray.Count
+   do
   begin
     if SysAlfa[IdArray[i].id] = aLex then
     begin
@@ -179,34 +111,17 @@ begin
   end;
 end;
 
-function AddSpace(Str: string): string;
-begin
-  Str := Str.Replace(':', ' : ');
-  Str := Str.Replace(';', ' ; ');
-  Str := Str.Replace('(', ' ( ');
-  Str := Str.Replace(')', ' ) ');
-  Str := Str.Replace('+', ' + ');
-  Str := Str.Replace('-', ' - ');
-  Str := Str.Replace('*', ' * ');
-  Str := Str.Replace(',', ' , ');
-  Str := Str.Replace('.', ' . ');
-  Str := Str.Replace('=', ' = ');
-  result := Str;
-end;
-
 function SearchIdentifier(lex: string): boolean;
 begin
-  Result:= Identifier.Contains(lex);
+  result := Identifier.Contains(lex);
 end;
 
 procedure AddIdentifier(lex: string);
-var
-  i: integer;
 begin
   Identifier.Add(lex);
 end;
 
-procedure TForm1.Obiavlenie(var index: integer);
+function TForm1.Obiavlenie(var index: integer): boolean;
 var
   i: integer;
   lex, ident: string;
@@ -219,7 +134,7 @@ var
   end;
 
 begin
-  i:=index;
+  i := index;
   NextLex();
 
   if lex = 'идентификатор' then
@@ -244,10 +159,10 @@ begin
     begin
       NextLex();
       if (lex = 'integer') then
-        begin
-          index:=i;
-          exit
-        end
+      begin
+        index := i;
+        exit
+      end
       else
         Memo2.Lines.Add('Ожидается integer');
     end
@@ -257,10 +172,10 @@ begin
   else
     Memo2.Lines.Add('Ожидается идентефикорав');
 
-  index:=i;
+  index := i;
 end;
 
-function TForm1.SpisokObiavlenii():boolean;
+function TForm1.SpisokObiavlenii(): boolean;
 var
   i: integer;
   lex, nLex: string;
@@ -269,11 +184,11 @@ var
   begin
     inc(i);
     lex := SysAlfa[IdArray[i].id];
-    nLex:= SysAlfa[IdArray[i+1].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
   end;
 
 begin
-  result:= false;
+  result := false;
   i := -1;
   NextLex();
 
@@ -281,12 +196,12 @@ begin
 
   Obiavlenie(i);
   NextLex();
-  while ((nlex <> 'begin') and (lex = ';' )) do
-    BEGIN
-      Obiavlenie(i);
-      NextLex();
-    END;
-  result:=true;
+  while ((nLex <> 'begin') and (lex = ';')) do
+  BEGIN
+    Obiavlenie(i);
+    NextLex();
+  END;
+  result := true;
 end;
 
 // разбор конструкции заголовка
@@ -342,39 +257,9 @@ begin
 end;
 
 procedure TForm1.ButtonCompileClick(Sender: TObject);
-var
-  line, Str: string;
-  s: TStringList;
-  i, j: integer;
-  word: string;
-  id: integer;
-  index: integer;
 begin
-  index := 0;
-  for j := 0 to Memo1.Lines.Count - 1 do
-  begin
-    line := Memo1.Lines[j];
-
-    if not IsSymbolInAlha(line) then
-    begin
-      Memo2.Lines.Add('Error: Неизвестный символ');
-    end;
-
-    Str := '';
-    line := AddSpace(line);
-    s := Parser(line);
-    for i := 0 to s.Count - 1 do
-    begin
-      word := s[i];
-      id := SearchKeyWord(word);
-      IdArray[index].id := id;
-      if id = 12 then
-        IdArray[index].name := word;
-      if id = 13 then
-        IdArray[index].number := id;
-      inc(index);
-    end;
-  end;
+  IdArray:= TList<TLexScaner>.Create;
+  LexicalAnalyzer.Analyze(Memo1.Lines);
 
   SyntaxAnalyzer();
 
@@ -382,21 +267,17 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-    Identifier := TList<String>.Create;
+  Identifier := TList<String>.Create;
 end;
 
 procedure TForm1.SyntaxAnalyzer();
 var
   result: boolean;
 begin
-  // for I := 0 to Length(IdArray) do
-  // begin
-  // lex:= SysAlfa[IdArray[i].id];
-  // end;
   result := Zagolovok();
   if result = true then
     Memo2.Lines.Add('Заголовок успешно скомпилирован');
-  result:=SpisokObiavlenii();
+  result := SpisokObiavlenii();
   if result = true then
     Memo2.Lines.Add('Список объявлений успешно скомпилирован');
 

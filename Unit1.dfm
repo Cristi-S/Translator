@@ -29,7 +29,7 @@ object Form1: TForm1
       Align = alClient
       Lines.Strings = (
         'program test;'
-        'var x,y,z:integer;'
+        'var x,k,z:integer;'
         'k,a:integer;'
         'begin'
         'y:=100*x;'
@@ -44,23 +44,23 @@ object Form1: TForm1
     Height = 63
     Align = alClient
     TabOrder = 1
-    object ButtonCompile: TButton
-      Left = 40
-      Top = 16
-      Width = 75
-      Height = 25
-      Caption = 'Compile'
-      TabOrder = 0
-      OnClick = ButtonCompileClick
-    end
     object Button2: TButton
       Left = 136
       Top = 16
       Width = 75
       Height = 25
       Caption = 'Clear'
-      TabOrder = 1
+      TabOrder = 0
       OnClick = Button2Click
+    end
+    object ButtonCompile: TButton
+      Left = 40
+      Top = 16
+      Width = 75
+      Height = 25
+      Caption = 'Compile'
+      TabOrder = 1
+      OnClick = ButtonCompileClick
     end
   end
   object Panel3: TPanel
