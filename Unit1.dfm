@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 120
   TextHeight = 16
   object Panel1: TPanel
@@ -28,7 +29,8 @@ object Form1: TForm1
       Align = alClient
       Lines.Strings = (
         'program test;'
-        'var x,y:integer;'
+        'var x,y,z:integer;'
+        'k,a:integer;'
         'begin'
         'y:=100*x;'
         'end.')
