@@ -133,19 +133,6 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   Identifier := TList<String>.Create;
 end;
-//
-//procedure TForm1.SyntaxAnalyzer();
-//var
-//  result: boolean;
-//begin
-//  result := Zagolovok();
-//  if result = true then
-//    TLogger.Log('Заголовок успешно скомпилирован');
-//  result := SpisokObiavlenii();
-//  if result = true then
-//    TLogger.Log('Список объявлений успешно скомпилирован');
-//
-//end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
