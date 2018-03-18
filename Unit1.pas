@@ -47,7 +47,7 @@ const
 var
   Form1: TForm1;
   // массив скомпилированных кодов программы
-  //IdArray: array [1 .. 200] of TLexScaner;
+  // IdArray: array [1 .. 200] of TLexScaner;
   IdArray: TList<TLexScaner>;
   // список идентификаторов
   Identifier: TList<String>;
@@ -89,9 +89,7 @@ var
     '0'
   );
 
-  implementation
-
-
+implementation
 
 {$R *.dfm}
 
@@ -100,8 +98,7 @@ var
   i: integer;
 begin
   result := -1;
-  for i := 0 to IdArray.Count
-   do
+  for i := 0 to IdArray.Count do
   begin
     if SysAlfa[IdArray[i].id] = aLex then
     begin
@@ -140,7 +137,7 @@ begin
   if lex = 'идентификатор' then
   begin
     if SearchIdentifier(ident) then
-      Memo2.Lines.Add('Такой индефикатор уже существует')
+      TLogger.Log('Такой индефикатор уже существует')
     else
       AddIdentifier(ident);
 
@@ -149,7 +146,7 @@ begin
     begin
       NextLex();
       if SearchIdentifier(ident) then
-        Memo2.Lines.Add('Такой индефикатор уже существует')
+        TLogger.Log('Такой индефикатор уже существует')
       else
         AddIdentifier(ident);
       NextLex();
@@ -164,13 +161,13 @@ begin
         exit
       end
       else
-        Memo2.Lines.Add('Ожидается integer');
+        TLogger.Log('Ожидается integer');
     end
     else
-      Memo2.Lines.Add('Ожидается двоеточие');
+      TLogger.Log('Ожидается двоеточие');
   end
   else
-    Memo2.Lines.Add('Ожидается идентефикорав');
+    TLogger.Log('Ожидается идентефикорав');
 
   index := i;
 end;
@@ -233,21 +230,21 @@ begin
         if lex = ';' then
         else
         begin
-          Memo2.Lines.Add('Ожидается точка с запятой');
+          TLogger.Log('Ожидается точка с запятой');
           result := false;
           exit
         end;
       end
       else
       begin
-        Memo2.Lines.Add('Ожидается инднфикатор');
+        TLogger.Log('Ожидается инднфикатор');
         result := false;
         exit;
       end
     end
     else
     begin
-      Memo2.Lines.Add('Ожидается PROGRAM');
+      TLogger.Log('Ожидается PROGRAM');
       result := false;
       exit
     end;
@@ -258,7 +255,7 @@ end;
 
 procedure TForm1.ButtonCompileClick(Sender: TObject);
 begin
-  IdArray:= TList<TLexScaner>.Create;
+  IdArray := TList<TLexScaner>.Create;
   LexicalAnalyzer.Analyze(Memo1.Lines);
 
   SyntaxAnalyzer();
@@ -276,10 +273,10 @@ var
 begin
   result := Zagolovok();
   if result = true then
-    Memo2.Lines.Add('Заголовок успешно скомпилирован');
+    TLogger.Log('Заголовок успешно скомпилирован');
   result := SpisokObiavlenii();
   if result = true then
-    Memo2.Lines.Add('Список объявлений успешно скомпилирован');
+    TLogger.Log('Список объявлений успешно скомпилирован');
 
 end;
 

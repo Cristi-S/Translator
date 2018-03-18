@@ -113,7 +113,7 @@ begin
 
     if not IsSymbolInAlha(line) then
     begin
-      Strings.Add('Error: Неизвестный символ');
+      TLogger.Log('Error: Неизвестный символ');
     end;
 
     Str := '';
