@@ -19,15 +19,16 @@ type
     ButtonCompile: TButton;
     procedure ButtonCompileClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    function Zagolovok(): boolean;
-    function SpisokObiavlenii(): boolean;
-    function Obiavlenie(var index: integer): boolean;
-    procedure SyntaxAnalyzer();
+//    function Zagolovok(): boolean;
+//    function SpisokObiavlenii(): boolean;
+//    function Obiavlenie(var index: integer): boolean;
+//    procedure SyntaxAnalyzer();
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
+
   end;
 
 type
@@ -89,6 +90,9 @@ var
     '0'
   );
 
+  function SearchIdentifier(lex: string): boolean;
+  procedure AddIdentifier(lex: string);
+  function SearchLexInIdArray(aLex: string): integer;
 implementation
 
 {$R *.dfm}
@@ -118,167 +122,30 @@ begin
   Identifier.Add(lex);
 end;
 
-function TForm1.Obiavlenie(var index: integer): boolean;
-var
-  i: integer;
-  lex, ident: string;
-
-  procedure NextLex();
-  begin
-    inc(i);
-    lex := SysAlfa[IdArray[i].id];
-    ident := IdArray[i].name;
-  end;
-
-begin
-  i := index;
-  NextLex();
-
-  if lex = 'идентификатор' then
-  begin
-    if SearchIdentifier(ident) then
-      TLogger.Log('Такой индефикатор уже существует')
-    else
-      AddIdentifier(ident);
-
-    NextLex();
-    while lex = ',' do
-    begin
-      NextLex();
-      if SearchIdentifier(ident) then
-        TLogger.Log('Такой индефикатор уже существует')
-      else
-        AddIdentifier(ident);
-      NextLex();
-    end;
-
-    if (lex = ':') then
-    begin
-      NextLex();
-      if (lex = 'integer') then
-      begin
-        index := i;
-        exit
-      end
-      else
-        TLogger.Log('Ожидается integer');
-    end
-    else
-      TLogger.Log('Ожидается двоеточие');
-  end
-  else
-    TLogger.Log('Ожидается идентефикорав');
-
-  index := i;
-end;
-
-function TForm1.SpisokObiavlenii(): boolean;
-var
-  i: integer;
-  lex, nLex: string;
-
-  procedure NextLex();
-  begin
-    inc(i);
-    lex := SysAlfa[IdArray[i].id];
-    nLex := SysAlfa[IdArray[i + 1].id];
-  end;
-
-begin
-  result := false;
-  i := -1;
-  NextLex();
-
-  i := SearchLexInIdArray('var');
-
-  Obiavlenie(i);
-  NextLex();
-  while ((nLex <> 'begin') and (lex = ';')) do
-  BEGIN
-    Obiavlenie(i);
-    NextLex();
-  END;
-  result := true;
-end;
-
-// разбор конструкции заголовка
-// возвращает TRUE если ошибок нет
-function TForm1.Zagolovok(): boolean;
-var
-  i: integer;
-  lex: string;
-  // начало подпрограммы
-  procedure NextLex();
-  begin
-    inc(i);
-    lex := SysAlfa[IdArray[i].id];
-  end;
-// конец подпрограммы
-
-begin
-  i := -1;
-  NextLex();
-
-  while lex <> 'var' do
-  begin
-    if lex = 'program' then
-    begin
-      NextLex();
-      if lex = 'идентификатор' then
-      begin
-        NextLex();
-        if lex = ';' then
-        else
-        begin
-          TLogger.Log('Ожидается точка с запятой');
-          result := false;
-          exit
-        end;
-      end
-      else
-      begin
-        TLogger.Log('Ожидается инднфикатор');
-        result := false;
-        exit;
-      end
-    end
-    else
-    begin
-      TLogger.Log('Ожидается PROGRAM');
-      result := false;
-      exit
-    end;
-    NextLex();
-  end;
-  result := true;
-end;
-
 procedure TForm1.ButtonCompileClick(Sender: TObject);
 begin
   IdArray := TList<TLexScaner>.Create;
   LexicalAnalyzer.Analyze(Memo1.Lines);
-
-  SyntaxAnalyzer();
-
+  SyntacticalAnalyzer.Analyze();
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Identifier := TList<String>.Create;
 end;
-
-procedure TForm1.SyntaxAnalyzer();
-var
-  result: boolean;
-begin
-  result := Zagolovok();
-  if result = true then
-    TLogger.Log('Заголовок успешно скомпилирован');
-  result := SpisokObiavlenii();
-  if result = true then
-    TLogger.Log('Список объявлений успешно скомпилирован');
-
-end;
+//
+//procedure TForm1.SyntaxAnalyzer();
+//var
+//  result: boolean;
+//begin
+//  result := Zagolovok();
+//  if result = true then
+//    TLogger.Log('Заголовок успешно скомпилирован');
+//  result := SpisokObiavlenii();
+//  if result = true then
+//    TLogger.Log('Список объявлений успешно скомпилирован');
+//
+//end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
