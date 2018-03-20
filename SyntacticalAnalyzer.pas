@@ -109,7 +109,7 @@ begin
       if (lex = 'integer') then
       begin
         index := i;
-        Result:=true;
+        result := true;
         exit
       end
       else
@@ -125,11 +125,191 @@ begin
     end
   end
   else
-    begin
-      TLogger.Log('Ожидается идентификор');
-      result := false;
-    end;
+  begin
+    TLogger.Log('Ожидается идентификор');
+    result := false;
+  end;
   index := i;
+end;
+
+function Operators(index: integer): boolean;
+var
+  i, id: integer;
+  lex, ident: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    id:= IdArray[i].id;
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  i := index;
+  NextLex();
+  lex:= ident;
+
+  case id of
+    12:
+      begin
+        // ToDo:реализовать оператор присваивания
+      end;
+    9:
+      begin
+        // ToDo:реализовать оператор цикла
+      end;
+    7:
+      begin
+        // ToDo:реализовать оператор ввода
+      end;
+    8:
+      begin
+        // ToDo:реализовать оператор вывода
+      end;
+  else
+    begin
+      TLogger.Log('Неизвестный оператор');
+      exit;
+    end;
+  end;
+end;
+
+function OpPrisv(index: integer): boolean;
+var
+  i: integer;
+  lex, ident: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  i := index;
+  NextLex();
+
+  if lex = 'идентификатор' then
+  begin
+    if Unit1.SearchIdentifier(ident) then
+    begin
+      NextLex();
+      if lex = '=' then
+      begin
+        // ToDo:реализовать выражение
+      end
+      else
+        TLogger.Log('нужно=');
+    end
+    else
+    begin
+      TLogger.Log('Объяви');
+      result := false;
+      exit;
+    end;
+    NextLex();
+
+  end
+  else
+    TLogger.Log('ожидается идентификатор');
+end;
+
+function Mnogitel(index: integer): boolean;
+var
+  i: integer;
+  lex, ident: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  i := index;
+  NextLex();
+
+  if lex = 'идентификатор' then
+  begin
+    begin
+      if Unit1.SearchIdentifier(ident) then
+        exit
+      else
+        TLogger.Log('неизвестный идентификатор');
+    end;
+  end
+  else if lex = 'число' then
+    exit;
+  if lex = '(' then
+  begin
+    // ToDo:реализовать выражение
+    if lex = ')' then
+      exit
+    else
+      TLogger.Log('ожидается )')
+  end
+  else
+    TLogger.Log('ожидается (');
+end;
+
+function Slagaemoe(index:integer): boolean;
+var
+  i: integer;
+  lex, nLex: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+  end;
+
+begin
+  result := false;
+  i := index;
+  NextLex();
+
+  i := SearchLexInIdArray('begin');
+
+  Mnogitel(i);
+  NextLex();
+  while ((nLex = '*') or (lex = 'div')) do
+  BEGIN
+    Mnogitel(i);
+    NextLex();
+  END;
+  result := true;
+end;
+
+function Viragenie(): boolean;
+var
+  i: integer;
+  lex, nLex: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+  end;
+
+begin
+  result := false;
+  i := -1;
+  NextLex();
+
+  i := SearchLexInIdArray('begin');
+  Slagaemoe(i);
+  NextLex();
+  while ((nLex = '+') or (lex = '-')) do
+  BEGIN
+    Slagaemoe(i);
+    NextLex();
+  END;
+  result := true;
 end;
 
 function SpisokObiavlenii(): boolean;
@@ -156,6 +336,35 @@ begin
   while ((nLex <> 'begin') and (lex = ';')) do
   BEGIN
     Obiavlenie(i);
+    NextLex();
+  END;
+  result := true;
+end;
+
+function SpisokOperatorov: boolean;
+var
+  i: integer;
+  lex, nLex: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+  end;
+
+begin
+  result := false;
+  i := -1;
+  NextLex();
+
+  i := SearchLexInIdArray('begin');
+
+  Operators(i);
+  NextLex();
+  while (nLex <> '.') do
+  BEGIN
+    Operators(i);
     NextLex();
   END;
   result := true;
