@@ -5,6 +5,7 @@ interface
 uses Logger;
 
 procedure Analyze();
+procedure Viragenie(var i: integer);
 
 implementation
 
@@ -132,28 +133,70 @@ begin
   index := i;
 end;
 
-function Operators(index: integer): boolean;
+function OpPrisv(var i: integer): boolean;
 var
-  i, id: integer;
   lex, ident: string;
 
   procedure NextLex();
   begin
     inc(i);
-    id:= IdArray[i].id;
     lex := SysAlfa[IdArray[i].id];
     ident := IdArray[i].name;
   end;
 
 begin
-  i := index;
-  NextLex();
-  lex:= ident;
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
+
+  if lex = 'идентификатор' then
+  begin
+    if Unit1.SearchIdentifier(ident) then
+    begin
+      NextLex();
+      if lex = '=' then
+      begin
+        Viragenie(i);
+      end
+      else
+        TLogger.Log('нужно=');
+    end
+    else
+    begin
+      TLogger.Log('Объяви');
+      result := false;
+      exit;
+    end;
+//    NextLex();  ///////////////////////
+
+  end
+  else
+    TLogger.Log('ожидается идентификатор');
+end;
+
+function Operators(var i: integer): boolean;
+var
+  id: integer;
+  lex, ident: string;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    id := IdArray[i].id;
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  id := IdArray[i].id;
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
+  lex := ident;
 
   case id of
     12:
       begin
-        // ToDo:реализовать оператор присваивания
+
+        OpPrisv(i);
       end;
     9:
       begin
@@ -175,9 +218,8 @@ begin
   end;
 end;
 
-function OpPrisv(index: integer): boolean;
+function Mnogitel(var i: integer): boolean;
 var
-  i: integer;
   lex, ident: string;
 
   procedure NextLex();
@@ -188,49 +230,8 @@ var
   end;
 
 begin
-  i := index;
-  NextLex();
-
-  if lex = 'идентификатор' then
-  begin
-    if Unit1.SearchIdentifier(ident) then
-    begin
-      NextLex();
-      if lex = '=' then
-      begin
-        // ToDo:реализовать выражение
-      end
-      else
-        TLogger.Log('нужно=');
-    end
-    else
-    begin
-      TLogger.Log('Объяви');
-      result := false;
-      exit;
-    end;
-    NextLex();
-
-  end
-  else
-    TLogger.Log('ожидается идентификатор');
-end;
-
-function Mnogitel(index: integer): boolean;
-var
-  i: integer;
-  lex, ident: string;
-
-  procedure NextLex();
-  begin
-    inc(i);
-    lex := SysAlfa[IdArray[i].id];
-    ident := IdArray[i].name;
-  end;
-
-begin
-  i := index;
-  NextLex();
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
 
   if lex = 'идентификатор' then
   begin
@@ -245,7 +246,7 @@ begin
     exit;
   if lex = '(' then
   begin
-    // ToDo:реализовать выражение
+    Viragenie(i);
     if lex = ')' then
       exit
     else
@@ -255,9 +256,8 @@ begin
     TLogger.Log('ожидается (');
 end;
 
-function Slagaemoe(index:integer): boolean;
+function Slagaemoe(var i: integer): boolean;
 var
-  i: integer;
   lex, nLex: string;
 
   procedure NextLex();
@@ -269,24 +269,22 @@ var
 
 begin
   result := false;
-  i := index;
-  NextLex();
-
-  i := SearchLexInIdArray('begin');
+  lex := SysAlfa[IdArray[i].id];
+  nLex := SysAlfa[IdArray[i + 1].id];
 
   Mnogitel(i);
   NextLex();
   while ((nLex = '*') or (lex = 'div')) do
   BEGIN
-    Mnogitel(i);
     NextLex();
+    Mnogitel(i);
+
   END;
   result := true;
 end;
 
-function Viragenie(): boolean;
+procedure Viragenie(var i: integer);
 var
-  i: integer;
   lex, nLex: string;
 
   procedure NextLex();
@@ -297,11 +295,8 @@ var
   end;
 
 begin
-  result := false;
-  i := -1;
   NextLex();
-
-  i := SearchLexInIdArray('begin');
+  // i := SearchLexInIdArray('begin');
   Slagaemoe(i);
   NextLex();
   while ((nLex = '+') or (lex = '-')) do
@@ -309,7 +304,7 @@ begin
     Slagaemoe(i);
     NextLex();
   END;
-  result := true;
+
 end;
 
 function SpisokObiavlenii(): boolean;
@@ -341,38 +336,43 @@ begin
   result := true;
 end;
 
-function SpisokOperatorov: boolean;
+procedure SpisokOperatorov(var i: integer);
 var
-  i: integer;
   lex, nLex: string;
 
   procedure NextLex();
   begin
     inc(i);
     lex := SysAlfa[IdArray[i].id];
-    nLex := SysAlfa[IdArray[i + 1].id];
+    nLex := SysAlfa[IdArray[i+1].id];
   end;
 
 begin
-  result := false;
-  i := -1;
+  // i := SearchLexInIdArray('begin');
   NextLex();
-
-  i := SearchLexInIdArray('begin');
 
   Operators(i);
   NextLex();
-  while (nLex <> '.') do
+  while (lex = ';') and (nLex <> 'end') do
   BEGIN
     Operators(i);
     NextLex();
   END;
-  result := true;
 end;
 
 procedure Analyze();
 var
+  i: integer;
+  lex, nLex: string;
   result: boolean;
+
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    // nLex := SysAlfa[IdArray[i].id];
+  end;
+
 begin
   result := Zagolovok();
   if result = true then
@@ -381,6 +381,30 @@ begin
   if result = true then
     TLogger.Log('Список объявлений успешно скомпилирован');
 
+  i := SearchLexInIdArray('begin');
+  lex := SysAlfa[IdArray[i].id];
+  if lex = 'begin' then
+  begin
+    SpisokOperatorov(i);
+    // NextLex();
+    lex := SysAlfa[IdArray[i].id];
+    if lex = 'end' then
+    begin
+      NextLex();
+      if lex = '.' then
+      begin
+        TLogger.Log('Успешно скомпилирован');
+        exit
+      end
+      else
+        TLogger.Log('ожидается .')
+    end
+
+    else
+      TLogger.Log('ожидается end')
+  end
+  else
+    TLogger.Log('ожидается begin');
 end;
 
 end.
