@@ -155,6 +155,7 @@ begin
       NextLex();
       if lex = '=' then
       begin
+        NextLex();
         Viragenie(i);
       end
       else
@@ -190,7 +191,7 @@ begin
   id := IdArray[i].id;
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
-  lex := ident;
+//  lex := ident;
 
   case id of
     12:
@@ -274,11 +275,11 @@ begin
 
   Mnogitel(i);
   NextLex();
-  while ((nLex = '*') or (lex = 'div')) do
+  while ((lex = '*') or (lex = 'div')) do
   BEGIN
     NextLex();
     Mnogitel(i);
-
+    NextLex();
   END;
   result := true;
 end;
@@ -295,11 +296,13 @@ var
   end;
 
 begin
-  NextLex();
+  //NextLex();
+  lex := SysAlfa[IdArray[i].id];
+  nLex := SysAlfa[IdArray[i + 1].id];
   // i := SearchLexInIdArray('begin');
   Slagaemoe(i);
   NextLex();
-  while ((nLex = '+') or (lex = '-')) do
+  while ((lex = '+') or (lex = '-')) do
   BEGIN
     Slagaemoe(i);
     NextLex();
@@ -352,9 +355,13 @@ begin
   NextLex();
 
   Operators(i);
-  NextLex();
+//  NextLex();
+  lex := SysAlfa[IdArray[i].id];
+  nLex := SysAlfa[IdArray[i+1].id];
+
   while (lex = ';') and (nLex <> 'end') do
   BEGIN
+    NextLex();
     Operators(i);
     NextLex();
   END;

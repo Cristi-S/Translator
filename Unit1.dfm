@@ -29,10 +29,10 @@ object Form1: TForm1
       Align = alClient
       Lines.Strings = (
         'program test;'
-        'var x,k,z:integer;'
+        'var x,z:integer;'
         'k,a:integer;'
         'begin'
-        'y:=100*x;'
+        'z=100*x;'
         'end.')
       TabOrder = 0
     end
