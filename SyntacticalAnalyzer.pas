@@ -502,7 +502,11 @@ begin
 
   if lex = 'begin' then
   begin
-    result := SpisokOperatorov(i);
+    if not SpisokOperatorov(i) then
+    begin
+      result:=false;
+      exit;
+    end;
     NextLex();
     if lex = 'end' then
     begin
