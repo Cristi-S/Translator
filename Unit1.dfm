@@ -11,7 +11,6 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnCreate = FormCreate
   PixelsPerInch = 120
   TextHeight = 16
   object Panel1: TPanel
@@ -43,7 +42,6 @@ object Form1: TForm1
         'write(a);'
         'end.')
       TabOrder = 0
-      ExplicitHeight = 186
     end
   end
   object Panel2: TPanel
@@ -53,8 +51,6 @@ object Form1: TForm1
     Height = 62
     Align = alClient
     TabOrder = 1
-    ExplicitTop = 216
-    ExplicitHeight = 40
     object Button2: TButton
       Left = 136
       Top = 16
@@ -88,8 +84,6 @@ object Form1: TForm1
       Height = 283
       Align = alClient
       TabOrder = 0
-      ExplicitTop = 40
-      ExplicitHeight = 284
     end
   end
 end

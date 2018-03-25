@@ -19,11 +19,6 @@ type
     ButtonCompile: TButton;
     procedure ButtonCompileClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-//    function Zagolovok(): boolean;
-//    function SpisokObiavlenii(): boolean;
-//    function Obiavlenie(var index: integer): boolean;
-//    procedure SyntaxAnalyzer();
-    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -125,13 +120,11 @@ end;
 procedure TForm1.ButtonCompileClick(Sender: TObject);
 begin
   IdArray := TList<TLexScaner>.Create;
+  Identifier := TList<String>.Create;
+  memo2.Clear;
+
   LexicalAnalyzer.Analyze(Memo1.Lines);
   SyntacticalAnalyzer.Analyze();
-end;
-
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  Identifier := TList<String>.Create;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);

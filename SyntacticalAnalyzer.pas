@@ -6,9 +6,9 @@ uses Logger;
 
 procedure Analyze();
 procedure Viragenie(var i: integer);
-procedure OpCycle(var i: integer);
-procedure OpVvod(var i: integer);
-procedure OpVivod(var i: integer);
+function OpCycle(var i: integer): boolean;
+function OpVvod(var i: integer): boolean;
+function OpVivod(var i: integer): boolean;
 
 implementation
 
@@ -33,36 +33,32 @@ begin
   // NextLex();
   lex := SysAlfa[IdArray[i].id];
 
-  while lex <> 'var' do
+  if lex = 'program' then
   begin
-    if lex = 'program' then
+    NextLex();
+    if lex = 'идентификатор' then
     begin
       NextLex();
-      if lex = 'идентификатор' then
-      begin
-        NextLex();
-        if lex = ';' then
-        else
-        begin
-          TLogger.Log('Ожидается точка с запятой');
-          result := false;
-          exit
-        end;
-      end
+      if lex = ';' then
       else
       begin
-        TLogger.Log('Ожидается инднфикатор');
+        TLogger.Log('Ожидается точка с запятой');
         result := false;
-        exit;
-      end
+        exit
+      end;
     end
     else
     begin
-      TLogger.Log('Ожидается PROGRAM');
+      TLogger.Log('Ожидается инднфикатор');
       result := false;
-      exit
-    end;
-    NextLex();
+      exit;
+    end
+  end
+  else
+  begin
+    TLogger.Log('Ожидается PROGRAM');
+    result := false;
+    exit
   end;
   result := true;
 end;
@@ -148,6 +144,7 @@ var
   end;
 
 begin
+  result := true;
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
 
@@ -162,11 +159,14 @@ begin
         Viragenie(i);
       end
       else
-        TLogger.Log('нужно=');
+      begin
+        TLogger.Log('Ожидается символ присваивания');
+        result := false;
+      end
     end
     else
     begin
-      TLogger.Log('Объяви');
+      TLogger.Log('Неизвестный идентификатор: ' + ident);
       result := false;
       exit;
     end;
@@ -174,7 +174,10 @@ begin
 
   end
   else
+  begin
     TLogger.Log('ожидается идентификатор');
+    result := false;
+  end;
 end;
 
 function Operators(var i: integer): boolean;
@@ -191,6 +194,7 @@ var
   end;
 
 begin
+  result := false;
   id := IdArray[i].id;
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
@@ -199,23 +203,46 @@ begin
   case id of
     12:
       begin
-
-        OpPrisv(i);
+        if OpPrisv(i) then
+          result := true
+        else
+        begin
+          lex := SysAlfa[IdArray[i].id];
+          lex := SysAlfa[IdArray[i].id + 1];
+          result := false;
+        end
       end;
     9:
       begin
-        // ToDo:реализовать оператор цикла
-        OpCycle(i);
+        // ToDo:реализовать оператор цикл
+        if OpCycle(i) then
+          result := true
+        else
+        begin
+          lex := SysAlfa[IdArray[i].id];
+          lex := SysAlfa[IdArray[i + 1].id];
+          lex := SysAlfa[IdArray[i + 2].id];
+          ident := IdArray[i].name;
+          result := false;
+        end
       end;
     7:
       begin
         // ToDo:реализовать оператор ввода
-        OpVvod(i);
+        if OpVvod(i) then
+          result := true
+        else
+        begin
+          lex := SysAlfa[IdArray[i].id];
+          result := false;
+        end
       end;
     8:
       begin
         // ToDo:реализовать оператор вывода
-        OpVivod(i);
+        if OpVivod(i) then
+          result := true
+
       end;
   else
     begin
@@ -246,7 +273,7 @@ begin
       if Unit1.SearchIdentifier(ident) then
         exit
       else
-        TLogger.Log('неизвестный идентификатор');
+        TLogger.Log('Неизвестный идентификатор: ' + ident);
     end;
   end
   else if lex = 'число' then
@@ -342,10 +369,9 @@ var
 
 begin
   result := false;
-  i:=i-2;
+  i := i - 1;
   NextLex;
-  lex := SysAlfa[IdArray[i].id];
-  nLex := SysAlfa[IdArray[i + 1].id];
+
   Obiavlenie(i);
   NextLex();
   while ((nLex <> 'begin') and (lex = ';')) do
@@ -356,7 +382,7 @@ begin
   result := true;
 end;
 
-procedure SpisokOperatorov(var i: integer);
+function SpisokOperatorov(var i: integer): boolean;
 var
   lex, nLex: string;
 
@@ -368,10 +394,15 @@ var
   end;
 
 begin
+  result := true;
   // i := SearchLexInIdArray('begin');
   NextLex();
 
-  Operators(i);
+  if not Operators(i) then
+  begin
+    result := false;
+    exit;
+  end;
   // NextLex();
   lex := SysAlfa[IdArray[i].id];
   nLex := SysAlfa[IdArray[i + 1].id];
@@ -379,7 +410,11 @@ begin
   while (lex = ';') and (nLex <> 'end') do
   BEGIN
     NextLex();
-    Operators(i);
+    if not Operators(i) then
+    begin
+      result := false;
+      exit;
+    end;
 
     lex := SysAlfa[IdArray[i].id];
     nLex := SysAlfa[IdArray[i + 1].id];
@@ -389,7 +424,7 @@ begin
   END;
 end;
 
-procedure IndVirag(var i: integer);
+function IndVirag(var i: integer): boolean;
 var
   lex, nLex, ident: string;
   procedure NextLex();
@@ -403,6 +438,7 @@ var
 begin
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
+  result := true;
 
   if lex = 'идентификатор' then
   begin
@@ -424,26 +460,32 @@ begin
         else
         begin
           TLogger.Log('ожидается to');
+          result := false;
           exit;
         end;
       end
       else
       begin
         TLogger.Log('ожидается символ присваивания');
+        result := false;
         exit;
       end;
     end
     else
     begin
-      TLogger.Log('Неизвестный идентификатор');
+      TLogger.Log('Неизвестный идентификатор: ' + ident);
+      result := false;
       exit;
     end;
   end
   else
+  begin
     TLogger.Log('ожидается идентификатор');
+    result := false;
+  end
 end;
 
-procedure TeloCycle(var i: integer);
+function TeloCycle(var i: integer): boolean;
 var
   lex, nLex: string;
   procedure NextLex();
@@ -454,26 +496,28 @@ var
   end;
 
 begin
+  result := false;
   lex := SysAlfa[IdArray[i].id];
   nLex := SysAlfa[IdArray[i + 1].id];
 
   if lex = 'begin' then
   begin
-    SpisokOperatorov(i);
+    result := SpisokOperatorov(i);
     NextLex();
     if lex = 'end' then
     begin
       NextLex();
+      result := true;
       exit;
     end
     else
       TLogger.Log('ожидается end')
   end
   else
-    Operators(i);
+    result := Operators(i);
 end;
 
-procedure OpCycle(var i: integer);
+function OpCycle(var i: integer): boolean;
 var
   lex, nLex: string;
   procedure NextLex();
@@ -488,21 +532,23 @@ begin
   if lex = 'for' then
   begin
     NextLex();
-    IndVirag(i);
-
-    lex := SysAlfa[IdArray[i].id];
-    nLex := SysAlfa[IdArray[i + 1].id];
-
-    if lex = 'do' then
+    if IndVirag(i) then
     begin
-      NextLex();
-      TeloCycle(i);
+      lex := SysAlfa[IdArray[i].id];
+      nLex := SysAlfa[IdArray[i + 1].id];
+
+      if lex = 'do' then
+      begin
+        NextLex();
+        result := TeloCycle(i);
+      end
+      else
+      begin
+        TLogger.Log('ожидается do');
+        result := false;
+        exit;
+      end;
     end
-    else
-    begin
-      TLogger.Log('ожидается do');
-      exit;
-    end;
   end
   else
   begin
@@ -540,19 +586,19 @@ begin
             Continue;
           end
           else
-            TLogger.Log('Неизвестный идентификатор')
+            TLogger.Log('Неизвестный идентификатор: ' + ident)
         else
           TLogger.Log('Ожидается идентификатор');
       end;
     end
     else
-      TLogger.Log('Неизвестный идентификатор');
+      TLogger.Log('Неизвестный идентификатор: ' + ident);
   end
   else
     TLogger.Log('Ожидается идентификатор');
 end;
 
-procedure OpVvod(var i: integer);
+function OpVvod(var i: integer): boolean;
 var
   lex, ident: string;
   procedure NextLex();
@@ -563,6 +609,7 @@ var
   end;
 
 begin
+  result := false;
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
 
@@ -577,6 +624,7 @@ begin
       if (lex = ')') then
       begin
         NextLex();
+        result := true;
         exit;
       end
       else
@@ -589,7 +637,7 @@ begin
     TLogger.Log('Ожидается read');
 end;
 
-procedure OpVivod(var i: integer);
+function OpVivod(var i: integer): boolean;
 var
   lex, ident: string;
   procedure NextLex();
@@ -600,6 +648,7 @@ var
   end;
 
 begin
+  result := false;
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
 
@@ -614,6 +663,7 @@ begin
       if (lex = ')') then
       begin
         NextLex();
+        result := true;
         exit;
       end
       else
@@ -645,32 +695,38 @@ begin
   if Zagolovok(i) then
   begin
     NextLex;
-    if SpisokObiavlenii(i) then
+    if lex = 'var' then
     begin
-      NextLex;
-      if lex = 'begin' then
+      if SpisokObiavlenii(i) then
       begin
-        SpisokOperatorov(i);
-        NextLex();
-        if lex = 'end' then
+        NextLex;
+        if lex = 'begin' then
         begin
-          NextLex();
-          if lex = '.' then
+          if SpisokOperatorov(i) then
           begin
-            TLogger.Log('Успешно скомпилирован');
-            exit
-          end
-          else
-            TLogger.Log('ожидается .')
-        end
+            NextLex();
+            if lex = 'end' then
+            begin
+              NextLex();
+              if lex = '.' then
+              begin
+                TLogger.Log('Успешно скомпилирован');
+                exit
+              end
+              else
+                TLogger.Log('ожидается .')
+            end
 
+            else
+              TLogger.Log('ожидается end')
+          end;
+        end
         else
-          TLogger.Log('ожидается end')
-      end
-      else
-        TLogger.Log('ожидается begin');
+          TLogger.Log('ожидается begin');
+      end;
     end;
   end;
+
 end;
 
 end.
