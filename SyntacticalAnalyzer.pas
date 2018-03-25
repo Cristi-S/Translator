@@ -7,6 +7,8 @@ uses Logger;
 procedure Analyze();
 procedure Viragenie(var i: integer);
 procedure OpCycle(var i: integer);
+procedure OpVvod(var i: integer);
+procedure OpVivod(var i: integer);
 
 implementation
 
@@ -208,10 +210,12 @@ begin
     7:
       begin
         // ToDo:реализовать оператор ввода
+        OpVvod(i);
       end;
     8:
       begin
         // ToDo:реализовать оператор вывода
+        OpVivod(i);
       end;
   else
     begin
@@ -460,10 +464,10 @@ begin
     SpisokOperatorov(i);
     NextLex();
     if lex = 'end' then
-      begin
-        NextLex();
-        exit;
-      end
+    begin
+      NextLex();
+      exit;
+    end
     else
       TLogger.Log('ожидается end')
   end
@@ -507,6 +511,121 @@ begin
     TLogger.Log('ожидается for');
     exit;
   end;
+end;
+
+procedure SpisIdentif(var i: integer);
+var
+  lex, ident: string;
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
+
+  if lex = 'идентификатор' then
+  begin
+    if Unit1.SearchIdentifier(ident) then
+    begin
+      NextLex();
+      while (lex = ',') do
+      begin
+        NextLex();
+        if (lex = 'идентификатор') then
+          if Unit1.SearchIdentifier(ident) then
+          begin
+            NextLex();
+            Continue;
+          end
+          else
+            TLogger.Log('Неизвестный идентификатор')
+        else
+          TLogger.Log('Ожидается идентификатор');
+      end;
+    end
+    else
+      TLogger.Log('Неизвестный идентификатор');
+  end
+  else
+    TLogger.Log('Ожидается идентификатор');
+end;
+
+procedure OpVvod(var i: integer);
+var
+  lex, ident: string;
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
+
+  if lex = 'read' then
+  begin
+    NextLex();
+    if lex = '(' then
+    begin
+      NextLex();
+      SpisIdentif(i);
+      lex := SysAlfa[IdArray[i].id];
+      if (lex = ')') then
+      begin
+        NextLex();
+        exit;
+      end
+      else
+        TLogger.Log('Ожидается правая скобка');
+    end
+    else
+      TLogger.Log('Ожидается левая скобка');
+  end
+  else
+    TLogger.Log('Ожидается read');
+end;
+
+procedure OpVivod(var i: integer);
+var
+  lex, ident: string;
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+  end;
+
+begin
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
+
+  if lex = 'write' then
+  begin
+    NextLex();
+    if lex = '(' then
+    begin
+      NextLex();
+      SpisIdentif(i);
+      lex := SysAlfa[IdArray[i].id];
+      if (lex = ')') then
+      begin
+        NextLex();
+        exit;
+      end
+      else
+        TLogger.Log('Ожидается правая скобка');
+    end
+    else
+      TLogger.Log('Ожидается левая скобка');
+  end
+  else
+    TLogger.Log('Ожидается write');
 end;
 
 procedure Analyze();

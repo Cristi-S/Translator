@@ -39,6 +39,8 @@ object Form1: TForm1
         '    x = x + 1;'
         '    y = k*x+z;'
         '  end;'
+        'read(x, z);'
+        'write(a);'
         'end.')
       TabOrder = 0
       ExplicitHeight = 186
