@@ -167,7 +167,7 @@ begin
       result := false;
       exit;
     end;
-//    NextLex();  ///////////////////////
+    // NextLex();  ///////////////////////
 
   end
   else
@@ -191,7 +191,7 @@ begin
   id := IdArray[i].id;
   lex := SysAlfa[IdArray[i].id];
   ident := IdArray[i].name;
-//  lex := ident;
+  // lex := ident;
 
   case id of
     12:
@@ -247,7 +247,12 @@ begin
     exit;
   if lex = '(' then
   begin
+    NextLex();
     Viragenie(i);
+
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+
     if lex = ')' then
       exit
     else
@@ -296,16 +301,24 @@ var
   end;
 
 begin
-  //NextLex();
+  // NextLex();
   lex := SysAlfa[IdArray[i].id];
   nLex := SysAlfa[IdArray[i + 1].id];
   // i := SearchLexInIdArray('begin');
   Slagaemoe(i);
-  NextLex();
+  //NextLex();
+  //возможно здесь лишний пеерход к след элементу, т.к. слагаемое самое прееходит к след элементу
+  lex := SysAlfa[IdArray[i].id];
+  nLex := SysAlfa[IdArray[i + 1].id];
+
   while ((lex = '+') or (lex = '-')) do
   BEGIN
-    Slagaemoe(i);
     NextLex();
+    Slagaemoe(i);
+
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+    //NextLex();
   END;
 
 end;
@@ -347,7 +360,7 @@ var
   begin
     inc(i);
     lex := SysAlfa[IdArray[i].id];
-    nLex := SysAlfa[IdArray[i+1].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
   end;
 
 begin
@@ -355,15 +368,20 @@ begin
   NextLex();
 
   Operators(i);
-//  NextLex();
+  // NextLex();
   lex := SysAlfa[IdArray[i].id];
-  nLex := SysAlfa[IdArray[i+1].id];
+  nLex := SysAlfa[IdArray[i + 1].id];
 
   while (lex = ';') and (nLex <> 'end') do
   BEGIN
     NextLex();
     Operators(i);
-    NextLex();
+
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+
+    //усбрал вот это для двух операторов. второй оператор присваивание обычное
+    //NextLex();
   END;
 end;
 
@@ -393,8 +411,9 @@ begin
   if lex = 'begin' then
   begin
     SpisokOperatorov(i);
-    // NextLex();
-    lex := SysAlfa[IdArray[i].id];
+    NextLex();
+    //если умножение и один оператор то мы останавливаемся на ; поэтому нужен переход к след лексеме
+    //lex := SysAlfa[IdArray[i].id];
     if lex = 'end' then
     begin
       NextLex();
