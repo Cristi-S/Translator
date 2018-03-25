@@ -18,36 +18,41 @@ object Form1: TForm1
     Left = 0
     Top = 0
     Width = 633
-    Height = 193
+    Height = 234
     Align = alTop
     TabOrder = 0
     object Memo1: TMemo
       Left = 1
       Top = 1
       Width = 631
-      Height = 191
+      Height = 232
       Align = alClient
       Lines.Strings = (
         'program test;'
-        'var x,y,z:integer;'
+        'var x,y,z, i:integer;'
         'k,a:integer;'
         'begin'
-        'z=(100*x)+1;'
+        'z=(100*x+2)*3;'
         'a = a + z;'
-        'y = k*x+z;'
+        'for i = 1 to 10 do'
+        '  begin'
+        '    x = x + 1;'
+        '    y = k*x+z;'
+        '  end;'
         'end.')
       TabOrder = 0
-      ExplicitLeft = 2
-      ExplicitTop = -4
+      ExplicitHeight = 186
     end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 193
+    Top = 234
     Width = 633
-    Height = 63
+    Height = 62
     Align = alClient
     TabOrder = 1
+    ExplicitTop = 216
+    ExplicitHeight = 40
     object Button2: TButton
       Left = 136
       Top = 16
@@ -69,18 +74,20 @@ object Form1: TForm1
   end
   object Panel3: TPanel
     Left = 0
-    Top = 256
+    Top = 296
     Width = 633
-    Height = 325
+    Height = 285
     Align = alBottom
     TabOrder = 2
     object Memo2: TMemo
       Left = 1
       Top = 1
       Width = 631
-      Height = 323
+      Height = 283
       Align = alClient
       TabOrder = 0
+      ExplicitTop = 40
+      ExplicitHeight = 284
     end
   end
 end

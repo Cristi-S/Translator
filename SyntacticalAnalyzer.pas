@@ -6,6 +6,7 @@ uses Logger;
 
 procedure Analyze();
 procedure Viragenie(var i: integer);
+procedure OpCycle(var i: integer);
 
 implementation
 
@@ -202,6 +203,7 @@ begin
     9:
       begin
         // ToDo:реализовать оператор цикла
+        OpCycle(i);
       end;
     7:
       begin
@@ -306,8 +308,8 @@ begin
   nLex := SysAlfa[IdArray[i + 1].id];
   // i := SearchLexInIdArray('begin');
   Slagaemoe(i);
-  //NextLex();
-  //возможно здесь лишний пеерход к след элементу, т.к. слагаемое самое прееходит к след элементу
+  // NextLex();
+  // возможно здесь лишний пеерход к след элементу, т.к. слагаемое самое прееходит к след элементу
   lex := SysAlfa[IdArray[i].id];
   nLex := SysAlfa[IdArray[i + 1].id];
 
@@ -318,7 +320,7 @@ begin
 
     lex := SysAlfa[IdArray[i].id];
     nLex := SysAlfa[IdArray[i + 1].id];
-    //NextLex();
+    // NextLex();
   END;
 
 end;
@@ -380,9 +382,131 @@ begin
     lex := SysAlfa[IdArray[i].id];
     nLex := SysAlfa[IdArray[i + 1].id];
 
-    //усбрал вот это дл€ двух операторов. второй оператор присваивание обычное
-    //NextLex();
+    // усбрал вот это дл€ двух операторов. второй оператор присваивание обычное
+    // NextLex();
   END;
+end;
+
+procedure IndVirag(var i: integer);
+var
+  lex, nLex, ident: string;
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    ident := IdArray[i].name;
+    nLex := SysAlfa[IdArray[i + 1].id];
+  end;
+
+begin
+  lex := SysAlfa[IdArray[i].id];
+  ident := IdArray[i].name;
+
+  if lex = 'идентификатор' then
+  begin
+    if Unit1.SearchIdentifier(ident) then
+    begin
+      NextLex();
+      if lex = '=' then
+      begin
+        NextLex();
+        Viragenie(i);
+        // здесь скорее всего нужно перейти к след элепемнту но это не точно
+        lex := SysAlfa[IdArray[i].id];
+
+        if lex = 'to' then
+        begin
+          NextLex();
+          Viragenie(i);
+        end
+        else
+        begin
+          TLogger.Log('ожидаетс€ to');
+          exit;
+        end;
+      end
+      else
+      begin
+        TLogger.Log('ожидаетс€ символ присваивани€');
+        exit;
+      end;
+    end
+    else
+    begin
+      TLogger.Log('Ќеизвестный идентификатор');
+      exit;
+    end;
+  end
+  else
+    TLogger.Log('ожидаетс€ идентификатор');
+end;
+
+procedure TeloCycle(var i: integer);
+var
+  lex, nLex: string;
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+  end;
+
+begin
+  lex := SysAlfa[IdArray[i].id];
+  nLex := SysAlfa[IdArray[i + 1].id];
+
+  if lex = 'begin' then
+  begin
+    SpisokOperatorov(i);
+    NextLex();
+    if lex = 'end' then
+      begin
+        NextLex();
+        exit;
+      end
+    else
+      TLogger.Log('ожидаетс€ end')
+  end
+  else
+    Operators(i);
+end;
+
+procedure OpCycle(var i: integer);
+var
+  lex, nLex: string;
+  procedure NextLex();
+  begin
+    inc(i);
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+  end;
+
+begin
+  lex := SysAlfa[IdArray[i].id];
+  if lex = 'for' then
+  begin
+    NextLex();
+    IndVirag(i);
+
+    lex := SysAlfa[IdArray[i].id];
+    nLex := SysAlfa[IdArray[i + 1].id];
+
+    if lex = 'do' then
+    begin
+      NextLex();
+      TeloCycle(i);
+    end
+    else
+    begin
+      TLogger.Log('ожидаетс€ do');
+      exit;
+    end;
+  end
+  else
+  begin
+    TLogger.Log('ожидаетс€ for');
+    exit;
+  end;
 end;
 
 procedure Analyze();
@@ -390,7 +514,6 @@ var
   i: integer;
   lex, nLex: string;
   result: boolean;
-
   procedure NextLex();
   begin
     inc(i);
@@ -412,8 +535,8 @@ begin
   begin
     SpisokOperatorov(i);
     NextLex();
-    //если умножение и один оператор то мы останавливаемс€ на ; поэтому нужен переход к след лексеме
-    //lex := SysAlfa[IdArray[i].id];
+    // если умножение и один оператор то мы останавливаемс€ на ; поэтому нужен переход к след лексеме
+    // lex := SysAlfa[IdArray[i].id];
     if lex = 'end' then
     begin
       NextLex();
