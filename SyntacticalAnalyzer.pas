@@ -17,9 +17,8 @@ uses
 
 // разбор конструкции заголовка
 // возвращает TRUE если ошибок нет
-function Zagolovok(): boolean;
+function Zagolovok(var i: integer): boolean;
 var
-  i: integer;
   lex: string;
   // начало подпрограммы
   procedure NextLex();
@@ -30,8 +29,9 @@ var
 // конец подпрограммы
 
 begin
-  i := -1;
-  NextLex();
+  // i := -1;
+  // NextLex();
+  lex := SysAlfa[IdArray[i].id];
 
   while lex <> 'var' do
   begin
@@ -329,9 +329,8 @@ begin
 
 end;
 
-function SpisokObiavlenii(): boolean;
+function SpisokObiavlenii(var i: integer): boolean;
 var
-  i: integer;
   lex, nLex: string;
 
   procedure NextLex();
@@ -343,11 +342,10 @@ var
 
 begin
   result := false;
-  i := -1;
-  NextLex();
-
-  i := SearchLexInIdArray('var');
-
+  i:=i-2;
+  NextLex;
+  lex := SysAlfa[IdArray[i].id];
+  nLex := SysAlfa[IdArray[i + 1].id];
   Obiavlenie(i);
   NextLex();
   while ((nLex <> 'begin') and (lex = ';')) do
@@ -641,38 +639,38 @@ var
   end;
 
 begin
-  result := Zagolovok();
-  if result = true then
-    TLogger.Log('Заголовок успешно скомпилирован');
-  result := SpisokObiavlenii();
-  if result = true then
-    TLogger.Log('Список объявлений успешно скомпилирован');
+  i := -1;
+  NextLex;
 
-  i := SearchLexInIdArray('begin');
-  lex := SysAlfa[IdArray[i].id];
-  if lex = 'begin' then
+  if Zagolovok(i) then
   begin
-    SpisokOperatorov(i);
-    NextLex();
-    // если умножение и один оператор то мы останавливаемся на ; поэтому нужен переход к след лексеме
-    // lex := SysAlfa[IdArray[i].id];
-    if lex = 'end' then
+    NextLex;
+    if SpisokObiavlenii(i) then
     begin
-      NextLex();
-      if lex = '.' then
+      NextLex;
+      if lex = 'begin' then
       begin
-        TLogger.Log('Успешно скомпилирован');
-        exit
+        SpisokOperatorov(i);
+        NextLex();
+        if lex = 'end' then
+        begin
+          NextLex();
+          if lex = '.' then
+          begin
+            TLogger.Log('Успешно скомпилирован');
+            exit
+          end
+          else
+            TLogger.Log('ожидается .')
+        end
+
+        else
+          TLogger.Log('ожидается end')
       end
       else
-        TLogger.Log('ожидается .')
-    end
-
-    else
-      TLogger.Log('ожидается end')
-  end
-  else
-    TLogger.Log('ожидается begin');
+        TLogger.Log('ожидается begin');
+    end;
+  end;
 end;
 
 end.
