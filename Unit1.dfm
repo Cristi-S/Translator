@@ -29,12 +29,16 @@ object Form1: TForm1
       Align = alClient
       Lines.Strings = (
         'program test;'
-        'var x,z:integer;'
+        'var x,y,z:integer;'
         'k,a:integer;'
         'begin'
-        'z=100*x;'
+        'z=(100*x)+1;'
+        'a = a + z;'
+        'y = k*x+z;'
         'end.')
       TabOrder = 0
+      ExplicitLeft = 2
+      ExplicitTop = -4
     end
   end
   object Panel2: TPanel
